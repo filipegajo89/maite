@@ -29,9 +29,22 @@
             text-align: center;
             color: #ff6b6b;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            font-size: 1.8em;
+            font-size: 2.2em;
             margin-top: 10px;
             margin-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 1.8em;
+            color: #4CAF50;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        p {
+            font-size: 1.2em;
+            line-height: 1.4;
         }
         
         .scanner-container {
@@ -90,11 +103,6 @@
             background-color: #45a049;
         }
         
-        button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
-        }
-        
         .product-list {
             background-color: #fff;
             padding: 15px;
@@ -120,28 +128,6 @@
             text-align: right;
             margin-top: 15px;
             color: #ff6b6b;
-        }
-        
-        h2 {
-            font-size: 1.3em;
-            color: #4CAF50;
-            margin-top: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .button-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        /* Classe adicionada para container de botões */
-        .action-buttons {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            margin-top: 15px;
         }
         
         .receipt {
@@ -201,6 +187,21 @@
             display: flex;
             align-items: center;
         }
+        
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        /* Classe adicionada para container de botões */
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -215,8 +216,8 @@
                 <video id="videoElement" autoplay></video>
             </div>
             <p>Aponte a câmera para o código de barras do produto</p>
-            <button id="startButton">Iniciar Scanner</button>
-            <button id="addManual">Adicionar Produto Manual</button>
+            <button id="startButton" onclick="startScanner()">Iniciar Scanner</button>
+            <button id="addManual" onclick="addRandomProduct()">Adicionar Produto Manual</button>
         </div>
         
         <div class="product-list">
@@ -225,8 +226,8 @@
             <div class="total">Total: R$ <span id="totalAmount">0.00</span></div>
             <div style="text-align: center; margin-top: 15px;">
                 <div class="action-buttons">
-                    <button id="payButton">Pagar</button>
-                    <button id="resetButton">Limpar Carrinho</button>
+                    <button id="payButton" onclick="finalizeSale()">Pagar</button>
+                    <button id="resetButton" onclick="resetCart()">Limpar Carrinho</button>
                 </div>
             </div>
         </div>
@@ -236,251 +237,245 @@
             <p>Obrigado por comprar no Mercadinho da Pequena!</p>
             <div id="receiptItems"></div>
             <div class="total">Total Pago: R$ <span id="receiptTotal">0.00</span></div>
-            <button id="newSaleButton">Nova Compra</button>
+            <button id="newSaleButton" onclick="newSale()">Nova Compra</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
-        // Garantir que o DOM está completamente carregado antes de adicionar event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Banco de dados de produtos (simulado)
-            const products = {
-                '123456789': { name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
-                '987654321': { name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
-                '456123789': { name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
-                '789123456': { name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
-                '321654987': { name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
-                '654987321': { name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
-            };
+    // Banco de dados de produtos (simulado)
+    const products = {
+        '123456789': { name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
+        '987654321': { name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
+        '456123789': { name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
+        '789123456': { name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
+        '321654987': { name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
+        '654987321': { name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
+    };
+    
+    // Produtos de exemplo para adicionar manualmente 
+    const manualProducts = [
+        { code: '123456789', name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
+        { code: '987654321', name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
+        { code: '456123789', name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
+        { code: '789123456', name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
+        { code: '321654987', name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
+        { code: '654987321', name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
+    ];
+    
+    // Carrinho de compras
+    const cart = [];
+    
+    // Elementos DOM
+    let videoElement = document.getElementById('videoElement');
+    let productItems = document.getElementById('productItems');
+    let totalAmount = document.getElementById('totalAmount');
+    let receipt = document.getElementById('receipt');
+    let receiptItems = document.getElementById('receiptItems');
+    let receiptTotal = document.getElementById('receiptTotal');
+    let feedback = document.getElementById('feedback');
+    
+    // Mostrar mensagem inicial
+    window.onload = function() {
+        showFeedback("Toque em 'Adicionar Produto Manual' para começar!", "success", 5000);
         
-            // Elementos DOM
-            const videoElement = document.getElementById('videoElement');
-            const startButton = document.getElementById('startButton');
-            const addManualButton = document.getElementById('addManual');
-            const productItems = document.getElementById('productItems');
-            const totalAmount = document.getElementById('totalAmount');
-            const payButton = document.getElementById('payButton');
-            const resetButton = document.getElementById('resetButton');
-            const receipt = document.getElementById('receipt');
-            const receiptItems = document.getElementById('receiptItems');
-            const receiptTotal = document.getElementById('receiptTotal');
-            const newSaleButton = document.getElementById('newSaleButton');
-            const feedback = document.getElementById('feedback');
+        // Verificar a compatibilidade da câmera
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('startButton').style.opacity = "0.5";
+            showFeedback("Câmera não disponível neste dispositivo. Use a adição manual.", "error", 5000);
             
-            // Carrinho de compras
-            const cart = [];
-            
-            // Produtos de exemplo para adicionar manualmente 
-            const manualProducts = [
-                { code: '123456789', name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
-                { code: '987654321', name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
-                { code: '456123789', name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
-                { code: '789123456', name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
-                { code: '321654987', name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
-                { code: '654987321', name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
-            ];
-        
-            // Iniciar scanner
-            startButton.addEventListener('click', function(e) {
-                e.preventDefault(); // Previne comportamento padrão
-                startScanner();
-            });
-            
-            addManualButton.addEventListener('click', function(e) {
-                e.preventDefault(); // Previne comportamento padrão
-                addRandomProduct();
-            });
-            
-            payButton.addEventListener('click', function(e) {
-                e.preventDefault(); // Previne comportamento padrão
-                finalizeSale();
-            });
-            
-            resetButton.addEventListener('click', function(e) {
-                e.preventDefault(); // Previne comportamento padrão
-                resetCart();
-            });
-            
-            newSaleButton.addEventListener('click', function(e) {
-                e.preventDefault(); // Previne comportamento padrão
-                newSale();
-            });
-        
-        function startScanner() {
-            // Verificar se o navegador suporta getUserMedia
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: "environment",
-                        width: { ideal: window.innerWidth },
-                        height: { ideal: window.innerHeight }
-                    } 
-                })
-                    .then(function(stream) {
-                        videoElement.srcObject = stream;
-                        
-                        Quagga.init({
-                            inputStream: {
-                                name: "Live",
-                                type: "LiveStream",
-                                target: document.querySelector('#videoElement'),
-                                constraints: {
-                                    width: window.innerWidth,
-                                    height: window.innerHeight,
-                                    facingMode: "environment"
-                                },
-                            },
-                            locator: {
-                                patchSize: "medium",
-                                halfSample: true
-                            },
-                            numOfWorkers: navigator.hardwareConcurrency || 4,
-                            decoder: {
-                                readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "upc_reader"]
-                            },
-                            locate: true
-                        }, function(err) {
-                            if (err) {
-                                showFeedback("Erro ao iniciar scanner. Use o botão 'Adicionar Produto Manual'", "error");
-                                console.error(err);
-                                return;
-                            }
-                            Quagga.start();
-                        });
-                        
-                        Quagga.onDetected(function(result) {
-                            let code = result.codeResult.code;
-                            
-                            // Buscar produto pelo código de barras
-                            addProductByCode(code);
-                            
-                            // Pausa breve para feedback visual
-                            Quagga.pause();
-                            setTimeout(() => {
-                                Quagga.start();
-                            }, 1500);
-                        });
-                    })
-                    .catch(function(err) {
-                        showFeedback("Não foi possível acessar a câmera. Use o botão 'Adicionar Produto Manual'", "error");
-                        console.error("Erro ao acessar a câmera: ", err);
-                    });
-            } else {
-                showFeedback("Seu navegador não suporta acesso à câmera", "error");
-            }
+            // Destacar o botão de adição manual
+            document.getElementById('addManual').style.backgroundColor = "#ff6b6b";
+            document.getElementById('addManual').classList.add("animated");
         }
+    };
+    
+    function startScanner() {
+        console.log("Iniciando scanner...");
+        showFeedback("Iniciando câmera...", "success");
         
-        function addProductByCode(code) {
-            const product = products[code];
-            
-            if (product) {
-                addToCart(code, product.name, product.price, product.image);
-                showFeedback(`${product.name} adicionado!`, "success");
-                playSound('success');
-            } else {
-                showFeedback("Produto não encontrado!", "error");
-                playSound('error');
-            }
+        // Verificar se o navegador suporta getUserMedia
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: "environment",
+                    width: { ideal: window.innerWidth },
+                    height: { ideal: window.innerHeight }
+                } 
+            })
+            .then(function(stream) {
+                videoElement.srcObject = stream;
+                
+                Quagga.init({
+                    inputStream: {
+                        name: "Live",
+                        type: "LiveStream",
+                        target: document.querySelector('#videoElement'),
+                        constraints: {
+                            width: window.innerWidth,
+                            height: window.innerHeight,
+                            facingMode: "environment"
+                        },
+                    },
+                    locator: {
+                        patchSize: "medium",
+                        halfSample: true
+                    },
+                    numOfWorkers: 2,
+                    decoder: {
+                        readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "upc_reader"]
+                    },
+                    locate: true
+                }, function(err) {
+                    if (err) {
+                        showFeedback("Erro ao iniciar scanner. Use o botão 'Adicionar Produto Manual'", "error");
+                        console.error(err);
+                        return;
+                    }
+                    Quagga.start();
+                    showFeedback("Scanner iniciado! Aponte para um código de barras.", "success");
+                });
+                
+                Quagga.onDetected(function(result) {
+                    console.log("Código detectado:", result.codeResult.code);
+                    let code = result.codeResult.code;
+                    
+                    // Buscar produto pelo código de barras
+                    addProductByCode(code);
+                    
+                    // Pausa breve para feedback visual
+                    Quagga.pause();
+                    setTimeout(() => {
+                        Quagga.start();
+                    }, 1500);
+                });
+            })
+            .catch(function(err) {
+                showFeedback("Não foi possível acessar a câmera. Use o botão 'Adicionar Produto Manual'", "error");
+                console.error("Erro ao acessar a câmera: ", err);
+            });
+        } else {
+            showFeedback("Seu navegador não suporta acesso à câmera", "error");
         }
+    }
+    
+    function addProductByCode(code) {
+        const product = products[code];
         
-        function addRandomProduct() {
-            // Seleciona um produto aleatório da lista manual
-            const randomIndex = Math.floor(Math.random() * manualProducts.length);
-            const product = manualProducts[randomIndex];
-            
-            addToCart(product.code, product.name, product.price, product.image);
+        if (product) {
+            addToCart(code, product.name, product.price, product.image);
             showFeedback(`${product.name} adicionado!`, "success");
             playSound('success');
+        } else {
+            showFeedback("Produto não encontrado!", "error");
+            playSound('error');
         }
+    }
+    
+    function addRandomProduct() {
+        console.log("Adicionando produto aleatório...");
+        // Seleciona um produto aleatório da lista manual
+        const randomIndex = Math.floor(Math.random() * manualProducts.length);
+        const product = manualProducts[randomIndex];
         
-        function addToCart(code, name, price, image) {
-            cart.push({ code, name, price, image });
-            updateCart();
-        }
+        addToCart(product.code, product.name, product.price, product.image);
+        showFeedback(`${product.name} adicionado!`, "success");
+        playSound('success');
+    }
+    
+    function addToCart(code, name, price, image) {
+        cart.push({ code, name, price, image });
+        updateCart();
+    }
+    
+    function updateCart() {
+        // Limpar a lista
+        productItems.innerHTML = '';
         
-        function updateCart() {
-            // Limpar a lista
-            productItems.innerHTML = '';
+        // Adicionar cada produto
+        cart.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'product-item animated';
             
-            // Adicionar cada produto
-            cart.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'product-item animated';
-                
-                div.innerHTML = `
-                    <div class="product-container">
-                        <img src="${item.image}" class="product-image" alt="${item.name}">
-                        <span>${item.name}</span>
-                    </div>
-                    <span>R$ ${item.price.toFixed(2)}</span>
-                `;
-                
-                productItems.appendChild(div);
-            });
-            
-            // Atualizar total
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            totalAmount.textContent = total.toFixed(2);
-        }
-        
-        function finalizeSale() {
-            if (cart.length === 0) {
-                showFeedback("Adicione produtos ao carrinho primeiro!", "error");
-                return;
-            }
-            
-            // Copiar itens para o recibo
-            receiptItems.innerHTML = '';
-            cart.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'product-item';
-                div.innerHTML = `
+            div.innerHTML = `
+                <div class="product-container">
+                    <img src="${item.image}" class="product-image" alt="${item.name}">
                     <span>${item.name}</span>
-                    <span>R$ ${item.price.toFixed(2)}</span>
-                `;
-                receiptItems.appendChild(div);
-            });
+                </div>
+                <span>R$ ${item.price.toFixed(2)}</span>
+            `;
             
-            // Atualizar total do recibo
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            receiptTotal.textContent = total.toFixed(2);
-            
-            // Mostrar recibo
-            receipt.style.display = 'block';
-            
-            // Som de caixa registradora
-            playSound('cash');
-            
-            // Confete de celebração
-            celebrateSuccess();
+            productItems.appendChild(div);
+        });
+        
+        // Atualizar total
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        totalAmount.textContent = total.toFixed(2);
+    }
+    
+    function finalizeSale() {
+        console.log("Finalizando venda...");
+        if (cart.length === 0) {
+            showFeedback("Adicione produtos ao carrinho primeiro!", "error");
+            return;
         }
         
-        function resetCart() {
-            cart.length = 0;
-            updateCart();
-            showFeedback("Carrinho limpo!", "success");
-        }
+        // Copiar itens para o recibo
+        receiptItems.innerHTML = '';
+        cart.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'product-item';
+            div.innerHTML = `
+                <span>${item.name}</span>
+                <span>R$ ${item.price.toFixed(2)}</span>
+            `;
+            receiptItems.appendChild(div);
+        });
         
-        function newSale() {
-            receipt.style.display = 'none';
-            resetCart();
-        }
+        // Atualizar total do recibo
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        receiptTotal.textContent = total.toFixed(2);
         
-        function showFeedback(message, type, duration = 3000) {
-            feedback.textContent = message;
-            feedback.className = `feedback ${type}`;
-            feedback.style.fontSize = "1.4em";
-            feedback.style.padding = "15px";
-            
-            // Mostrar e depois esconder após alguns segundos
-            feedback.classList.remove('hidden');
-            setTimeout(() => {
-                feedback.classList.add('hidden');
-            }, duration);
-        }
+        // Mostrar recibo
+        receipt.style.display = 'block';
         
-        function playSound(type) {
+        // Som de caixa registradora
+        playSound('cash');
+        
+        // Confete de celebração
+        celebrateSuccess();
+    }
+    
+    function resetCart() {
+        console.log("Limpando carrinho...");
+        cart.length = 0;
+        updateCart();
+        showFeedback("Carrinho limpo!", "success");
+    }
+    
+    function newSale() {
+        console.log("Iniciando nova venda...");
+        receipt.style.display = 'none';
+        resetCart();
+    }
+    
+    function showFeedback(message, type, duration = 3000) {
+        console.log("Feedback:", message, type);
+        feedback.textContent = message;
+        feedback.className = `feedback ${type}`;
+        feedback.style.fontSize = "1.4em";
+        feedback.style.padding = "15px";
+        
+        // Mostrar e depois esconder após alguns segundos
+        feedback.classList.remove('hidden');
+        setTimeout(() => {
+            feedback.classList.add('hidden');
+        }, duration);
+    }
+    
+    function playSound(type) {
+        try {
             // Simulação de sons - em uma versão completa, você adicionaria arquivos de áudio reais
             if (type === 'success') {
                 // Som de sucesso
@@ -498,58 +493,57 @@
                 audio.src = 'https://www.soundjay.com/mechanical/sounds/cash-register-01.mp3';
                 audio.play().catch(e => console.log("Erro ao reproduzir áudio:", e));
             }
+        } catch (e) {
+            console.log("Erro ao reproduzir áudio:", e);
         }
-        
-        function celebrateSuccess() {
-            // Função de celebração simples - em uma versão completa você adicionaria uma animação mais elaborada
-            const container = document.querySelector('.container');
-            container.classList.add('animated');
-            setTimeout(() => {
-                container.classList.remove('animated');
-            }, 1000);
-        // Lidar com a orientação da tela em dispositivos móveis
-        window.addEventListener('resize', function() {
-            if (Quagga.canvas && Quagga.canvas.ctx) {
-                // Reiniciar o scanner quando a orientação da tela mudar
-                const wasRunning = Quagga.isRunning();
-                if (wasRunning) {
-                    Quagga.stop();
-                    setTimeout(() => {
-                        startScanner();
-                    }, 300);
-                }
+    }
+    
+    function celebrateSuccess() {
+        // Função de celebração simples - em uma versão completa você adicionaria uma animação mais elaborada
+        const container = document.querySelector('.container');
+        container.classList.add('animated');
+        setTimeout(() => {
+            container.classList.remove('animated');
+        }, 1000);
+    }
+    
+    // Lidar com a orientação da tela em dispositivos móveis
+    window.addEventListener('resize', function() {
+        if (typeof Quagga !== 'undefined' && Quagga && Quagga.canvas && Quagga.canvas.ctx) {
+            // Reiniciar o scanner quando a orientação da tela mudar
+            const wasRunning = typeof Quagga.isRunning === 'function' && Quagga.isRunning();
+            if (wasRunning) {
+                Quagga.stop();
+                setTimeout(() => {
+                    startScanner();
+                }, 300);
             }
-        });
-        
-        // Prevenção de zoom em dispositivos móveis
-        document.addEventListener('touchmove', function(event) {
-            if (event.scale !== 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
-        
-        // Ajustar o comportamento para instalação como aplicativo
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-            // O aplicativo está sendo executado no modo standalone/instalado
-            document.body.classList.add('standalone');
         }
-        
-        // PWA instalação
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZnVuY3Rpb24oZXZlbnQpIHsKICBzZWxmLnNraXBXYWl0aW5nKCk7Cn0pOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7CiAgcmV0dXJuOyAvLyBOZW5odW0gY2FjaGUgcGFyYSBlc3RlIGV4ZW1wbG8gc2ltcGxlcwp9KTs=')
-                    .then(reg => console.log('Service Worker registrado'))
-                    .catch(err => console.log('Service Worker não registrado', err));
-            });
+    });
+    
+    // Prevenção de zoom em dispositivos móveis
+    document.addEventListener('touchmove', function(event) {
+        if (event.scale !== 1) {
+            event.preventDefault();
         }
-        
-        // Mostra dica para instalação em dispositivos móveis
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            showFeedback("Adicione este app à tela inicial para melhor experiência!", "success", 5000);
+    }, { passive: false });
+    
+    // PWA instalação
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZnVuY3Rpb24oZXZlbnQpIHsKICBzZWxmLnNraXBXYWl0aW5nKCk7Cn0pOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7CiAgcmV0dXJuOyAvLyBOZW5odW0gY2FjaGUgcGFyYSBlc3RlIGV4ZW1wbG8gc2ltcGxlcwp9KTs=')
+                .then(reg => console.log('Service Worker registrado'))
+                .catch(err => console.log('Service Worker não registrado', err));
         });
+    }
+    
+    // Mostra dica para instalação em dispositivos móveis
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showFeedback("Adicione este app à tela inicial para melhor experiência!", "success", 5000);
+    });
     </script>
 </body>
 </html>
