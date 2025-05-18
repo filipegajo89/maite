@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Mercadinho da Pequena</title>
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiTWVyY2FkaW5obyBkYSBQZXF1ZW5hIiwic2hvcnRfbmFtZSI6Ik1lcmNhZGluaG8iLCJzdGFydF91cmwiOiIuL2luZGV4Lmh0bWwiLCJkaXNwbGF5IjoiZnVsbHNjcmVlbiIsImJhY2tncm91bmRfY29sb3IiOiIjZjVmNWRjIiwidGhlbWVfY29sb3IiOiIjZmY2YjZiIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzg2OS84NjkzNzAucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f5f5dc;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            overscroll-behavior: none; /* Impede o overscroll em dispositivos móveis */
+            touch-action: manipulation; /* Melhora o tempo de resposta de toque */
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 1.8em;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .scanner-container {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        #scanner {
+            width: 100%;
+            max-width: 300px;
+            height: 250px;
+            border: 5px dashed #4CAF50;
+            border-radius: 15px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 8px 2px;
+            cursor: pointer;
+            border-radius: 50px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent; /* Remove destaque ao tocar */
+            touch-action: manipulation; /* Melhora o tempo de resposta */
+            width: auto; /* Ajusta largura ao conteúdo */
+            min-width: 120px; /* Largura mínima para facilitar toque */
+        }
+        
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        
+        .product-list {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 50vh;
+            overflow-y: auto; /* Adicionado scroll para muitos produtos */
+            -webkit-overflow-scrolling: touch; /* Para rolagem suave em iOS */
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 5px;
+            border-bottom: 2px dashed #ccc;
+            font-size: 1.1em;
+            align-items: center;
+        }
+        
+        .total {
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+            color: #ff6b6b;
+        }
+        
+        h2 {
+            font-size: 1.3em;
+            color: #4CAF50;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        /* Classe adicionada para container de botões */
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .receipt {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .animated {
+            animation: pop 0.5s ease;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .feedback {
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .product-image {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            border-radius: 8px;
+        }
+        
+        .product-container {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Mercadinho da Pequena 🛒</h1>
+        
+        <div id="feedback" class="feedback hidden"></div>
+        
+        <div class="scanner-container">
+            <h2>Scanner de Produtos</h2>
+            <div id="scanner">
+                <video id="videoElement" autoplay></video>
+            </div>
+            <p>Aponte a câmera para o código de barras do produto</p>
+            <button id="startButton">Iniciar Scanner</button>
+            <button id="addManual">Adicionar Produto Manual</button>
+        </div>
+        
+        <div class="product-list">
+            <h2>Produtos no Carrinho</h2>
+            <div id="productItems"></div>
+            <div class="total">Total: R$ <span id="totalAmount">0.00</span></div>
+            <div style="text-align: center; margin-top: 15px;">
+                <div class="action-buttons">
+                    <button id="payButton">Pagar</button>
+                    <button id="resetButton">Limpar Carrinho</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="receipt" class="receipt">
+            <h2>🧾 Cupom Fiscal 🧾</h2>
+            <p>Obrigado por comprar no Mercadinho da Pequena!</p>
+            <div id="receiptItems"></div>
+            <div class="total">Total Pago: R$ <span id="receiptTotal">0.00</span></div>
+            <button id="newSaleButton">Nova Compra</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script>
+        // Banco de dados de produtos (simulado)
+        const products = {
+            '123456789': { name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
+            '987654321': { name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
+            '456123789': { name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
+            '789123456': { name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
+            '321654987': { name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
+            '654987321': { name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
+        };
+        
+        // Produtos de exemplo para adicionar manualmente 
+        const manualProducts = [
+            { code: '123456789', name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
+            { code: '987654321', name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
+            { code: '456123789', name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
+            { code: '789123456', name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
+            { code: '321654987', name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
+            { code: '654987321', name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
+        ];
+        
+        // Carrinho de compras
+        const cart = [];
+        
+        // Elementos DOM
+        const videoElement = document.getElementById('videoElement');
+        const startButton = document.getElementById('startButton');
+        const addManualButton = document.getElementById('addManual');
+        const productItems = document.getElementById('productItems');
+        const totalAmount = document.getElementById('totalAmount');
+        const payButton = document.getElementById('payButton');
+        const resetButton = document.getElementById('resetButton');
+        const receipt = document.getElementById('receipt');
+        const receiptItems = document.getElementById('receiptItems');
+        const receiptTotal = document.getElementById('receiptTotal');
+        const newSaleButton = document.getElementById('newSaleButton');
+        const feedback = document.getElementById('feedback');
+        
+        // Iniciar scanner
+        startButton.addEventListener('click', startScanner);
+        addManualButton.addEventListener('click', addRandomProduct);
+        payButton.addEventListener('click', finalizeSale);
+        resetButton.addEventListener('click', resetCart);
+        newSaleButton.addEventListener('click', newSale);
+        
+        function startScanner() {
+            // Verificar se o navegador suporta getUserMedia
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: window.innerWidth },
+                        height: { ideal: window.innerHeight }
+                    } 
+                })
+                    .then(function(stream) {
+                        videoElement.srcObject = stream;
+                        
+                        Quagga.init({
+                            inputStream: {
+                                name: "Live",
+                                type: "LiveStream",
+                                target: document.querySelector('#videoElement'),
+                                constraints: {
+                                    width: window.innerWidth,
+                                    height: window.innerHeight,
+                                    facingMode: "environment"
+                                },
+                            },
+                            locator: {
+                                patchSize: "medium",
+                                halfSample: true
+                            },
+                            numOfWorkers: navigator.hardwareConcurrency || 4,
+                            decoder: {
+                                readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "upc_reader"]
+                            },
+                            locate: true
+                        }, function(err) {
+                            if (err) {
+                                showFeedback("Erro ao iniciar scanner. Use o botão 'Adicionar Produto Manual'", "error");
+                                console.error(err);
+                                return;
+                            }
+                            Quagga.start();
+                        });
+                        
+                        Quagga.onDetected(function(result) {
+                            let code = result.codeResult.code;
+                            
+                            // Buscar produto pelo código de barras
+                            addProductByCode(code);
+                            
+                            // Pausa breve para feedback visual
+                            Quagga.pause();
+                            setTimeout(() => {
+                                Quagga.start();
+                            }, 1500);
+                        });
+                    })
+                    .catch(function(err) {
+                        showFeedback("Não foi possível acessar a câmera. Use o botão 'Adicionar Produto Manual'", "error");
+                        console.error("Erro ao acessar a câmera: ", err);
+                    });
+            } else {
+                showFeedback("Seu navegador não suporta acesso à câmera", "error");
+            }
+        }
+        
+        function addProductByCode(code) {
+            const product = products[code];
+            
+            if (product) {
+                addToCart(code, product.name, product.price, product.image);
+                showFeedback(`${product.name} adicionado!`, "success");
+                playSound('success');
+            } else {
+                showFeedback("Produto não encontrado!", "error");
+                playSound('error');
+            }
+        }
+        
+        function addRandomProduct() {
+            // Seleciona um produto aleatório da lista manual
+            const randomIndex = Math.floor(Math.random() * manualProducts.length);
+            const product = manualProducts[randomIndex];
+            
+            addToCart(product.code, product.name, product.price, product.image);
+            showFeedback(`${product.name} adicionado!`, "success");
+            playSound('success');
+        }
+        
+        function addToCart(code, name, price, image) {
+            cart.push({ code, name, price, image });
+            updateCart();
+        }
+        
+        function updateCart() {
+            // Limpar a lista
+            productItems.innerHTML = '';
+            
+            // Adicionar cada produto
+            cart.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'product-item animated';
+                
+                div.innerHTML = `
+                    <div class="product-container">
+                        <img src="${item.image}" class="product-image" alt="${item.name}">
+                        <span>${item.name}</span>
+                    </div>
+                    <span>R$ ${item.price.toFixed(2)}</span>
+                `;
+                
+                productItems.appendChild(div);
+            });
+            
+            // Atualizar total
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            totalAmount.textContent = total.toFixed(2);
+        }
+        
+        function finalizeSale() {
+            if (cart.length === 0) {
+                showFeedback("Adicione produtos ao carrinho primeiro!", "error");
+                return;
+            }
+            
+            // Copiar itens para o recibo
+            receiptItems.innerHTML = '';
+            cart.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.innerHTML = `
+                    <span>${item.name}</span>
+                    <span>R$ ${item.price.toFixed(2)}</span>
+                `;
+                receiptItems.appendChild(div);
+            });
+            
+            // Atualizar total do recibo
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            receiptTotal.textContent = total.toFixed(2);
+            
+            // Mostrar recibo
+            receipt.style.display = 'block';
+            
+            // Som de caixa registradora
+            playSound('cash');
+            
+            // Confete de celebração
+            celebrateSuccess();
+        }
+        
+        function resetCart() {
+            cart.length = 0;
+            updateCart();
+            showFeedback("Carrinho limpo!", "success");
+        }
+        
+        function newSale() {
+            receipt.style.display = 'none';
+            resetCart();
+        }
+        
+        function showFeedback(message, type) {
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+            
+            // Mostrar e depois esconder após alguns segundos
+            feedback.classList.remove('hidden');
+            setTimeout(() => {
+                feedback.classList.add('hidden');
+            }, 3000);
+        }
+        
+        function playSound(type) {
+            // Simulação de sons - em uma versão completa, você adicionaria arquivos de áudio reais
+            if (type === 'success') {
+                // Som de sucesso
+                const audio = new Audio();
+                audio.src = 'https://www.soundjay.com/buttons/sounds/beep-08b.mp3';
+                audio.play().catch(e => console.log("Erro ao reproduzir áudio:", e));
+            } else if (type === 'error') {
+                // Som de erro
+                const audio = new Audio();
+                audio.src = 'https://www.soundjay.com/buttons/sounds/button-10.mp3';
+                audio.play().catch(e => console.log("Erro ao reproduzir áudio:", e));
+            } else if (type === 'cash') {
+                // Som de caixa registradora
+                const audio = new Audio();
+                audio.src = 'https://www.soundjay.com/mechanical/sounds/cash-register-01.mp3';
+                audio.play().catch(e => console.log("Erro ao reproduzir áudio:", e));
+            }
+        }
+        
+        function celebrateSuccess() {
+            // Função de celebração simples - em uma versão completa você adicionaria uma animação mais elaborada
+            const container = document.querySelector('.container');
+            container.classList.add('animated');
+            setTimeout(() => {
+                container.classList.remove('animated');
+            }, 1000);
+        // Lidar com a orientação da tela em dispositivos móveis
+        window.addEventListener('resize', function() {
+            if (Quagga.canvas && Quagga.canvas.ctx) {
+                // Reiniciar o scanner quando a orientação da tela mudar
+                const wasRunning = Quagga.isRunning();
+                if (wasRunning) {
+                    Quagga.stop();
+                    setTimeout(() => {
+                        startScanner();
+                    }, 300);
+                }
+            }
+        });
+        
+        // Prevenção de zoom em dispositivos móveis
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Ajustar o comportamento para instalação como aplicativo
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            // O aplicativo está sendo executado no modo standalone/instalado
+            document.body.classList.add('standalone');
+        }
+        
+        // PWA instalação
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZnVuY3Rpb24oZXZlbnQpIHsKICBzZWxmLnNraXBXYWl0aW5nKCk7Cn0pOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7CiAgcmV0dXJuOyAvLyBOZW5odW0gY2FjaGUgcGFyYSBlc3RlIGV4ZW1wbG8gc2ltcGxlcwp9KTs=')
+                    .then(reg => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Service Worker não registrado', err));
+            });
+        }
+        
+        // Mostra dica para instalação em dispositivos móveis
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showFeedback("Adicione este app à tela inicial para melhor experiência!", "success", 5000);
+        });
+    </script>
+</body>
+</html>
