@@ -16,6 +16,7 @@
             color: #333;
             overscroll-behavior: none; /* Impede o overscroll em dispositivos móveis */
             touch-action: manipulation; /* Melhora o tempo de resposta de toque */
+            font-size: 18px; /* Fonte base maior */
         }
         
         .container {
@@ -62,12 +63,13 @@
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 15px 25px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            font-size: 16px;
-            margin: 8px 2px;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin: 10px 5px;
             cursor: pointer;
             border-radius: 50px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -75,7 +77,17 @@
             -webkit-tap-highlight-color: transparent; /* Remove destaque ao tocar */
             touch-action: manipulation; /* Melhora o tempo de resposta */
             width: auto; /* Ajusta largura ao conteúdo */
-            min-width: 120px; /* Largura mínima para facilitar toque */
+            min-width: 150px; /* Largura mínima para facilitar toque */
+        }
+        
+        button:active {
+            transform: scale(0.95);
+            background-color: #3e8e41;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            background-color: #45a049;
         }
         
         button:hover {
@@ -96,14 +108,14 @@
         .product-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 5px;
+            padding: 12px 10px;
             border-bottom: 2px dashed #ccc;
-            font-size: 1.1em;
+            font-size: 1.4em;
             align-items: center;
         }
         
         .total {
-            font-size: 1.3em;
+            font-size: 1.6em;
             font-weight: bold;
             text-align: right;
             margin-top: 15px;
@@ -157,22 +169,25 @@
         }
         
         .feedback {
-            padding: 10px;
+            padding: 15px;
             border-radius: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-align: center;
-            font-size: 1.2em;
+            font-size: 1.4em;
             font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .success {
             background-color: #d4edda;
             color: #155724;
+            border: 2px solid #c3e6cb;
         }
         
         .error {
             background-color: #f8d7da;
             color: #721c24;
+            border: 2px solid #f5c6cb;
         }
         
         .product-image {
@@ -227,49 +242,70 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
-        // Banco de dados de produtos (simulado)
-        const products = {
-            '123456789': { name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
-            '987654321': { name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
-            '456123789': { name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
-            '789123456': { name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
-            '321654987': { name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
-            '654987321': { name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
-        };
+        // Garantir que o DOM está completamente carregado antes de adicionar event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Banco de dados de produtos (simulado)
+            const products = {
+                '123456789': { name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
+                '987654321': { name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
+                '456123789': { name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
+                '789123456': { name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
+                '321654987': { name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
+                '654987321': { name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
+            };
         
-        // Produtos de exemplo para adicionar manualmente 
-        const manualProducts = [
-            { code: '123456789', name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
-            { code: '987654321', name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
-            { code: '456123789', name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
-            { code: '789123456', name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
-            { code: '321654987', name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
-            { code: '654987321', name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
-        ];
+            // Elementos DOM
+            const videoElement = document.getElementById('videoElement');
+            const startButton = document.getElementById('startButton');
+            const addManualButton = document.getElementById('addManual');
+            const productItems = document.getElementById('productItems');
+            const totalAmount = document.getElementById('totalAmount');
+            const payButton = document.getElementById('payButton');
+            const resetButton = document.getElementById('resetButton');
+            const receipt = document.getElementById('receipt');
+            const receiptItems = document.getElementById('receiptItems');
+            const receiptTotal = document.getElementById('receiptTotal');
+            const newSaleButton = document.getElementById('newSaleButton');
+            const feedback = document.getElementById('feedback');
+            
+            // Carrinho de compras
+            const cart = [];
+            
+            // Produtos de exemplo para adicionar manualmente 
+            const manualProducts = [
+                { code: '123456789', name: 'Maçã', price: 2.50, image: 'https://cdn-icons-png.flaticon.com/512/415/415682.png' },
+                { code: '987654321', name: 'Banana', price: 3.00, image: 'https://cdn-icons-png.flaticon.com/512/2909/2909761.png' },
+                { code: '456123789', name: 'Leite', price: 4.50, image: 'https://cdn-icons-png.flaticon.com/512/3165/3165570.png' },
+                { code: '789123456', name: 'Pão', price: 5.00, image: 'https://cdn-icons-png.flaticon.com/512/883/883581.png' },
+                { code: '321654987', name: 'Cereal', price: 8.75, image: 'https://cdn-icons-png.flaticon.com/512/3082/3082034.png' },
+                { code: '654987321', name: 'Suco', price: 6.25, image: 'https://cdn-icons-png.flaticon.com/512/3137/3137055.png' }
+            ];
         
-        // Carrinho de compras
-        const cart = [];
-        
-        // Elementos DOM
-        const videoElement = document.getElementById('videoElement');
-        const startButton = document.getElementById('startButton');
-        const addManualButton = document.getElementById('addManual');
-        const productItems = document.getElementById('productItems');
-        const totalAmount = document.getElementById('totalAmount');
-        const payButton = document.getElementById('payButton');
-        const resetButton = document.getElementById('resetButton');
-        const receipt = document.getElementById('receipt');
-        const receiptItems = document.getElementById('receiptItems');
-        const receiptTotal = document.getElementById('receiptTotal');
-        const newSaleButton = document.getElementById('newSaleButton');
-        const feedback = document.getElementById('feedback');
-        
-        // Iniciar scanner
-        startButton.addEventListener('click', startScanner);
-        addManualButton.addEventListener('click', addRandomProduct);
-        payButton.addEventListener('click', finalizeSale);
-        resetButton.addEventListener('click', resetCart);
-        newSaleButton.addEventListener('click', newSale);
+            // Iniciar scanner
+            startButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Previne comportamento padrão
+                startScanner();
+            });
+            
+            addManualButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Previne comportamento padrão
+                addRandomProduct();
+            });
+            
+            payButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Previne comportamento padrão
+                finalizeSale();
+            });
+            
+            resetButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Previne comportamento padrão
+                resetCart();
+            });
+            
+            newSaleButton.addEventListener('click', function(e) {
+                e.preventDefault(); // Previne comportamento padrão
+                newSale();
+            });
         
         function startScanner() {
             // Verificar se o navegador suporta getUserMedia
@@ -431,15 +467,17 @@
             resetCart();
         }
         
-        function showFeedback(message, type) {
+        function showFeedback(message, type, duration = 3000) {
             feedback.textContent = message;
             feedback.className = `feedback ${type}`;
+            feedback.style.fontSize = "1.4em";
+            feedback.style.padding = "15px";
             
             // Mostrar e depois esconder após alguns segundos
             feedback.classList.remove('hidden');
             setTimeout(() => {
                 feedback.classList.add('hidden');
-            }, 3000);
+            }, duration);
         }
         
         function playSound(type) {
